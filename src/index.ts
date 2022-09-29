@@ -37,8 +37,17 @@ export async function run(): Promise<void> {
     // print stacker version
     await cli.execute(["--version"], { group: true });
 
+    // get stacker cache dir
+    const cachedir = core.getInput("cache-dir");
+
     // get stacker file path from input
     const stackerfile = core.getInput("file");
+
+    // get stacker dir to recursive search for stacker files
+    const stackerdir = core.getInput("dir");
+
+    // get stacker file pattern
+    const stackerfilePattern = core.getInput("file-pattern");
 
     // get build-args from input
     const substitutes = utils.getInputList("build-args");
@@ -46,7 +55,7 @@ export async function run(): Promise<void> {
     // get layer-type from input
     const layerTypes = utils.getSpaceSeparatedInput("layer-type");
 
-    await cli.build(stackerfile, layerTypes, substitutes);
+    await cli.build(stackerfile, cachedir, stackerdir, stackerfilePattern, layerTypes, substitutes);
 
     // get tags from input
     const tags = utils.getSpaceSeparatedInput("tags");
@@ -57,7 +66,7 @@ export async function run(): Promise<void> {
     const skipTLS = core.getInput("skip-tls") === "true";
 
     if (registryURL) {
-        await cli.publish(stackerfile, layerTypes, substitutes,
+        await cli.publish(stackerfile, cachedir, stackerdir, stackerfilePattern, layerTypes, substitutes,
             registryURL, tags, username, password, skipTLS);
     }
 }

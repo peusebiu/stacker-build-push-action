@@ -20,8 +20,23 @@ export class StackerCLI {
         this.executable = executable;
     }
 
-    async build(stackerfile: string, layerType: string[], substitutes: string[]): Promise<CommandResult> {
-        const args: string[] = ["--debug", "build"];
+    async build(stackerfile: string, cachedir: string, stackerdir: string, stackerfilePattern: string,
+        layerType: string[], substitutes: string[]): Promise<CommandResult> {
+        const args: string[] = ["--debug"];
+
+        args.push("--stacker-dir");
+        args.push(cachedir);
+
+        if (stackerdir) {
+            args.push("recursive-build");
+            args.push(stackerdir);
+            args.push("--stacker-file-pattern");
+            args.push(stackerfilePattern);
+        } else {
+            args.push("build")
+            args.push("-f");
+            args.push(stackerfile);
+        }
 
         layerType.forEach((layerType) => {
             args.push("--layer-type");
@@ -32,9 +47,6 @@ export class StackerCLI {
             args.push("--substitute");
             args.push(substitute);
         })
-
-        args.push("-f");
-        args.push(stackerfile);
 
         const res = this.execute(args).then((res) => {
             if (res.exitCode == 0) {
@@ -48,9 +60,14 @@ export class StackerCLI {
         return res;
     }
 
-    async publish(stackerfile: string, layerType: string[], substitutes: string[],
+    async publish(stackerfile: string, cachedir: string, stackerdir: string, stackerfilePattern: string, layerType: string[], substitutes: string[],
         url: string, tags: string[], username: string, password: string, skipTLS: boolean): Promise<CommandResult> {
-        const args: string[] = ["--debug", "publish"];
+        const args: string[] = ["--debug"];
+
+        args.push("--stacker-dir");
+        args.push(cachedir);
+
+        args.push("publish");
 
         layerType.forEach((layerType) => {
             args.push("--layer-type");
@@ -84,8 +101,15 @@ export class StackerCLI {
             args.push("--skip-tls");
         }
 
-        args.push("-f");
-        args.push(stackerfile);
+        if (stackerdir) {
+            args.push("--search-dir");
+            args.push(stackerdir);
+            args.push("--stacker-file-pattern");
+            args.push(stackerfilePattern);
+        } else {
+            args.push("-f");
+            args.push(stackerfile); 
+        }
 
         return this.execute(args);
     }

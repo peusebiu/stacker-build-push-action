@@ -16,15 +16,19 @@ For more information about stacker tool see: https://github.com/project-stacker/
 
 | Input Name | Type |  Description | Default |
 | ---------- | ---- |----------- | ------- |
-| file | string |the yaml file to be built as an OCI image, example: [stacker.yaml](./test/stacker.yaml)  | stacker.yaml
-| layer-type | list | output layer type (supported values: tar, squashfs), can be both separated by whitespace | tar
+| file | string | the yaml file to be built as an OCI image, example: [stacker.yaml](./test/stacker.yaml)  | stacker.yaml
+| cache-dir | string | stacker's cache directory | ./.stacker
+| dir  | string | directory under which to recursive search for stackerfiles to build, use either file or dir | None
+| file-pattern| string | regex pattern to use when searching for stackerfile paths, used only with dir arg | \\/stacker.yaml$
+| layer-type | list | output layer type (supported values: tar, squashfs), ca be both separated by whitespace | tar
 | build-args | list | the list of build-time arguments (subtitutes) separated by newline, see [stacker.yaml doc](https://github.com/project-stacker/stacker/blob/master/doc/stacker_yaml.md) | None
 | url | string | remote OCI registry + repo name eg: docker://ghcr.io/project-stacker/ | None
 | tags | list | one or more tags to give the new image, separated by whitespace | None
 | username | string | used to login to registry | None
 | password | string | used to login to registry | None
 | skip-tls | bool | used with unsecure (http) registries | false
-| token    | string |github token used to authenticate against a repository for Git context | ${{ github.token }}
+| token    | string | github token used to authenticate against a repository for Git context | ${{ github.token }}
+
 
 
 Build only example:
