@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       registry:
-        image: registry:2
+        image: ghcr.io/project-zot/zot-linux-amd64:latest
         ports:
           - 5000:5000
     name: Test stacker-build-push-action
@@ -76,6 +76,15 @@ jobs:
             SUB1=VAR1
             SUB2=VAR2
             SUB3=VAR3
+          tags: v1 latest
+          url: docker://localhost:5000/name/app
+          layer-type: 'tar squashfs'
+          skip-tls: true
+
+      - name: Run stacker-build with a Dockerfile
+        uses: ./
+        with:
+          dockerfile: 'test/Dockerfile.yaml'
           tags: v1 latest
           url: docker://localhost:5000/name/app
           layer-type: 'tar squashfs'

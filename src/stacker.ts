@@ -12,6 +12,10 @@ export type CommandResult = {
     error: string
 };
 
+export type ConvertResult = {
+    stackerfile: string
+    subfile: string
+}
 
 export class StackerCLI {
     private readonly executable: string;
@@ -20,8 +24,44 @@ export class StackerCLI {
         this.executable = executable;
     }
 
+    async convertDockerfile(dockerfile: string): Promise<[Promise<CommandResult>, ConvertResult]> {
+        const args: string[] = ["--debug"];
+
+        const stackerfile = "stacker.yaml"
+        const subfile = "stacker-subs.yaml"
+
+        args.push("convert");
+        args.push("--docker-file");
+        args.push(dockerfile);
+
+        args.push("--output-file");
+        args.push(stackerfile);
+
+        args.push("--substitute-file");
+        args.push(subfile);
+
+        const res = this.execute(args).then((res) => {
+            if (res.exitCode == 0) {
+                core.info("printing resulting stacker.yaml after converting dockerfile");
+                exec.exec('/bin/bash -c "cat stacker.yaml | jq"', []);
+                
+                core.info("printing resulting substitutes file after converting dockerfile");
+                exec.exec('/bin/bash -c "cat stacker-subs.yaml | jq"', []);
+            } 
+
+            return res;
+        })
+
+        const cres : ConvertResult = {
+            stackerfile: stackerfile,
+            subfile: subfile,
+        }
+
+        return [res, cres];
+    }
+
     async build(stackerfile: string, cachedir: string, stackerdir: string, stackerfilePattern: string,
-        layerType: string[], substitutes: string[]): Promise<CommandResult> {
+        layerType: string[], substitutes: string[], subfile: string): Promise<CommandResult> {
         const args: string[] = ["--debug"];
 
         args.push("--stacker-dir");
@@ -48,6 +88,11 @@ export class StackerCLI {
             args.push(substitute);
         })
 
+        if (subfile) {
+            args.push("--substitute-file");
+            args.push(subfile);
+        }
+
         const res = this.execute(args).then((res) => {
             if (res.exitCode == 0) {
                 core.info("printing oci layout index.json");
@@ -61,7 +106,7 @@ export class StackerCLI {
     }
 
     async publish(stackerfile: string, cachedir: string, stackerdir: string, stackerfilePattern: string, layerType: string[], substitutes: string[],
-        url: string, tags: string[], username: string, password: string, skipTLS: boolean): Promise<CommandResult> {
+        subfile: string, url: string, tags: string[], username: string, password: string, skipTLS: boolean): Promise<CommandResult> {
         const args: string[] = ["--debug"];
 
         args.push("--stacker-dir");
@@ -78,6 +123,11 @@ export class StackerCLI {
             args.push("--substitute");
             args.push(substitute);
         });
+
+        if (subfile) {
+            args.push("--substitute-file");
+            args.push(subfile);
+        }
 
         args.push("--url");
         args.push(url);
